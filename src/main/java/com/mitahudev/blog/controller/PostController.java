@@ -3,10 +3,12 @@ package com.mitahudev.blog.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mitahudev.blog.entity.Post;
+import com.mitahudev.blog.services.PostService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,25 +25,27 @@ public class PostController {
     // Post post2 = new Post(2, "Second Post", "This is the body of the second post", "slug2", true, false, 1633123200, 1633209600);
 
     // List<Post> posts = List.of(post1, post2);
-    List<Post> posts = new ArrayList<>(List.of(
-        new Post(1, "First Post", "This is the body of the first post", "slug1", true, false, 1633036800, 1633123200),
-        new Post(2, "Second Post", "This is the body of the second post", "slug2", true, false, 1633123200, 1633209600)
-    ));
+    // List<Post> posts = new ArrayList<>(List.of(
+    //     new Post(1, "First Post", "This is the body of the first post", "slug1", true, false, 1633036800, 1633123200),
+    //     new Post(2, "Second Post", "This is the body of the second post", "slug2", true, false, 1633123200, 1633209600)
+    // ));
+
+    @Autowired
+    private PostService postService;
+
+
     @GetMapping("/")
     public List<Post> getPosts() {
         // This method should return a list of posts
         // For now, we will return an empty list
-        return posts;
+        return postService.getPosts();
     }
 
     @GetMapping("/{slug}")
     public Post getPostBySlug(@PathVariable String slug) {
         // This method should return a post by its slug
         // For now, we will return the first post if the slug matches
-        return posts.stream()
-                    .filter(post -> post.getSlug().equals(slug))
-                    .findFirst()
-                    .orElse(null);
+        return postService.getPostBySlug(slug);
     }
 
     @PostMapping("/")
@@ -49,43 +53,21 @@ public class PostController {
         // This method should create a new post
         // For now, we will return the post as is
         // In a real application, you would save the post to a database
-        posts.add(newPost);
-        return newPost;
+        return postService.createPost(newPost);
     }
 
     @PutMapping("/{slug}")
     public Post updatePost(@PathVariable String slug, @RequestBody Post updatedPost) {
         // This method should update an existing post by its slug
         // For now, we will return the updated post if the slug matches
-        Post savedPost = posts.stream()
-            .filter(post -> post.getSlug().equals(slug))
-            .findFirst()
-            .orElse(null);
-
-        if (savedPost == null) {
-            return null; // Post not found
-        }
-
-        savedPost.setTitle(updatedPost.getTitle());
-        savedPost.setBody(updatedPost.getBody());
-
-        return savedPost;
+        return postService.updatePost(slug, updatedPost);
     }
 
     @DeleteMapping("/{id}")
     public boolean deletePostById(@PathVariable Integer id) {
         // This method should delete a post by its slug
         // For now, we will just remove the post from the list if it exists
-        Post savedPost = posts.stream()
-            .filter(post -> post.getId().equals(id))
-            .findFirst()
-            .orElse(null);
-
-        if (savedPost == null) {
-            return false; // Post not found
-        }
-        posts.remove(savedPost);
-        return true; // Post deleted successfully
+        return postService.deletePost(String.valueOf(id));
     }
     
 }
