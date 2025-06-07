@@ -1,8 +1,24 @@
 package com.mitahudev.blog.entity;
+
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
+
 @Data
+@Entity
+@Table(name = "posts")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    
     private String title;
     private String body;
     private String slug;
@@ -11,8 +27,9 @@ public class Post {
     private Integer createdAt;
     private Integer publishedAt;
     
-    public Post(Integer id, String title, String body, String slug, boolean isPublished, boolean isDeleted, Integer createdAt, Integer publishedAt) {
-        this.id = id;
+    // Constructor tanpa ID untuk membuat post baru
+    public Post(String title, String body, String slug, boolean isPublished, 
+                boolean isDeleted, Integer createdAt, Integer publishedAt) {
         this.title = title;
         this.body = body;
         this.slug = slug;
@@ -21,4 +38,4 @@ public class Post {
         this.createdAt = createdAt;
         this.publishedAt = publishedAt;
     }
-} 
+}
