@@ -83,4 +83,15 @@ public class PostService {
         }
         return false;
     }
+
+    public Post publishPost(Integer id) {
+        Post savedPost = postRepository.findById(id).orElse(null);
+
+        if (savedPost == null) {
+            return null; // Post tidak ditemukan
+        }
+        savedPost.setPublished(true);
+        savedPost.setPublishedAt((int) (System.currentTimeMillis() / 1000)); // Set waktu publikasi
+        return postRepository.save(savedPost);
+    }
 }
