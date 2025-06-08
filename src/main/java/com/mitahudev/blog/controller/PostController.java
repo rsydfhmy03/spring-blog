@@ -32,7 +32,10 @@ public class PostController {
     public ResponseEntity<ApiResponse<List<Post>>> getAllPosts() {
         try {
             List<Post> posts = postService.getPosts();
-            MetaData meta = MetaData.simple(posts.size());
+            MetaData meta = MetaData.pagination(posts.size(), 1, 3);
+            if (posts.isEmpty()) {
+                return ResponseHelper.notFound("No posts found");
+            }
             return ResponseHelper.success(posts, "Posts retrieved successfully", meta);
         } catch (Exception e) {
             return ResponseHelper.internalError("Failed to retrieve posts: " + e.getMessage());
@@ -79,8 +82,7 @@ public class PostController {
                 return ResponseHelper.badRequest("Slug is required");
             }
             
-            // Set timestamp untuk post baru
-            newPost.setCreatedAt((int) (System.currentTimeMillis() / 1000));
+           
             Post createdPost = postService.createPost(newPost);
             return ResponseHelper.created(createdPost, "Post created successfully");
         } catch (Exception e) {

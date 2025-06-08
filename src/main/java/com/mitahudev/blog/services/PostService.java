@@ -1,5 +1,6 @@
 package com.mitahudev.blog.services;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,13 +21,19 @@ public class PostService {
     }
 
     public Post getPostBySlug(String slug) {
-        return ((List<Post>) postRepository.findAll()).stream()
-                    .filter(post -> post.getSlug().equals(slug))
-                    .findFirst()
-                    .orElse(null);
+        // return ((List<Post>) postRepository.findAll()).stream()
+        //             .filter(post -> post.getSlug().equals(slug))
+        //             .findFirst()
+        //             .orElse(null);
+        return postRepository.findBySlug(slug)
+                .orElse(null);
     }
 
     public Post createPost(Post newPost) {
+        newPost.setCreatedAt(Instant.now().getEpochSecond()); // Set waktu pembuatan
+        // newPost.setPublished(false); // Default tidak dipublikasikan
+        // newPost.setDeleted(false); // Default tidak dihapus
+        // newPost.setPublishedAt(null); // Set waktu publikasi ke null
         return postRepository.save(newPost);
     }   
 
@@ -91,7 +98,7 @@ public class PostService {
             return null; // Post tidak ditemukan
         }
         savedPost.setPublished(true);
-        savedPost.setPublishedAt((int) (System.currentTimeMillis() / 1000)); // Set waktu publikasi
+        savedPost.setPublishedAt(Instant.now().getEpochSecond()); // Set waktu publikasi
         return postRepository.save(savedPost);
     }
 }

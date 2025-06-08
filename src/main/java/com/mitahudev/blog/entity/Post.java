@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 
 @Data
 @Entity
@@ -21,15 +22,16 @@ public class Post {
     
     private String title;
     private String body;
+    @Column(unique = true)
     private String slug;
     private boolean isPublished;
     private boolean isDeleted;
-    private Integer createdAt;
-    private Integer publishedAt;
+    private Long createdAt;
+    private Long publishedAt;
     
     // Constructor tanpa ID untuk membuat post baru
     public Post(String title, String body, String slug, boolean isPublished, 
-                boolean isDeleted, Integer createdAt, Integer publishedAt) {
+                boolean isDeleted, Long createdAt, Long publishedAt) {
         this.title = title;
         this.body = body;
         this.slug = slug;
