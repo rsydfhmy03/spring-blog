@@ -15,6 +15,9 @@ public interface PostRepository extends CrudRepository<Post, Integer> {
     
     // Method untuk mencari post berdasarkan slug
     Optional<Post> findBySlug(String slug);
+
+    // Method untuk mencari post yang tidak dihapus
+    Optional<Post> findBySlugAndIsDeletedFalse(String slug);
     
     // Method untuk mencari post yang dipublikasikan
     List<Post> findByIsPublishedTrue();

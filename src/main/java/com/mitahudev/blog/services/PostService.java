@@ -25,7 +25,7 @@ public class PostService {
         //             .filter(post -> post.getSlug().equals(slug))
         //             .findFirst()
         //             .orElse(null);
-        return postRepository.findBySlug(slug)
+        return postRepository.findBySlugAndIsDeletedFalse(slug)
                 .orElse(null);
     }
 
@@ -55,7 +55,8 @@ public class PostService {
     public boolean deletePost(String slug) {
         Post postToDelete = getPostBySlug(slug);
         if (postToDelete != null) {
-            postRepository.delete(postToDelete);
+            postToDelete.setDeleted(true); // Tandai sebagai dihapus
+            postRepository.save(postToDelete);
             return true;
         }
         return false;
@@ -85,7 +86,9 @@ public class PostService {
     
     public boolean deletePostById(Integer id) {
         if (postRepository.existsById(id)) {
-            postRepository.deleteById(id);
+            // Tandai sebagai dihapus
+            postRepository.findById(id).ifPresent(post -> post.setDeleted(true));
+            postRepository.save(postRepository.findById(id).get());
             return true;
         }
         return false;
