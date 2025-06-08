@@ -1,67 +1,107 @@
 package com.mitahudev.blog.services;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mitahudev.blog.entity.Post;
+import com.mitahudev.blog.repository.PostRepository;
 
 @Service
 public class PostService {
 
-    private List<Post> posts = new ArrayList<>(List.of(
-        new Post(1, "First Post", "This is the body of the first post", "slug1", true, false, 1633036800, 1633123200),
-        new Post(2, "Second Post", "This is the body of the second post", "slug2", true, false, 1633123200, 1633209600)
-    ));
-
+    @Autowired
+    private PostRepository postRepository;
+    
     public List<Post> getPosts() {
-        // This method should return a list of posts
-        return posts;
+        return (List<Post>) postRepository.findAll();
     }
 
     public Post getPostBySlug(String slug) {
-        // This method should return a post by its slug
-        return posts.stream()
-                    .filter(post -> post.getSlug().equals(slug))
-                    .findFirst()
-                    .orElse(null);
+        // return ((List<Post>) postRepository.findAll()).stream()
+        //             .filter(post -> post.getSlug().equals(slug))
+        //             .findFirst()
+        //             .orElse(null);
+        return postRepository.findBySlugAndIsDeletedFalse(slug)
+                .orElse(null);
     }
 
     public Post createPost(Post newPost) {
-        // This method should create a new post
-        // In a real application, you would save the post to a database
-        posts.add(newPost);
-        return newPost;
+        newPost.setCreatedAt(Instant.now().getEpochSecond()); // Set waktu pembuatan
+        // newPost.setPublished(false); // Default tidak dipublikasikan
+        // newPost.setDeleted(false); // Default tidak dihapus
+        // newPost.setPublishedAt(null); // Set waktu publikasi ke null
+        return postRepository.save(newPost);
     }   
 
     public Post updatePost(String slug, Post updatedPost) {
-        // This method should update an existing post by its slug
-        Post savedPost = posts.stream()
-                              .filter(post -> post.getSlug().equals(slug))
-                              .findFirst()
-                              .orElse(null);
-        if (savedPost != null) {
-            savedPost.setTitle(updatedPost.getTitle());
-            savedPost.setBody(updatedPost.getBody());
-            savedPost.setPublished(updatedPost.isPublished());
-            savedPost.setDeleted(updatedPost.isDeleted());
-            savedPost.setCreatedAt(updatedPost.getCreatedAt());
-            savedPost.setPublishedAt(updatedPost.getPublishedAt());
+        Post existingPost = getPostBySlug(slug);
+        if (existingPost != null) {
+            existingPost.setTitle(updatedPost.getTitle());
+            existingPost.setBody(updatedPost.getBody());
+            existingPost.setSlug(updatedPost.getSlug());
+            existingPost.setPublished(updatedPost.isPublished());
+            existingPost.setDeleted(updatedPost.isDeleted());
+            existingPost.setCreatedAt(updatedPost.getCreatedAt());
+            existingPost.setPublishedAt(updatedPost.getPublishedAt());
+            return postRepository.save(existingPost);
         }
-        return savedPost;
+        return null;
     }
 
     public boolean deletePost(String slug) {
-        // This method should delete a post by its slug
-        Post postToDelete = posts.stream()
-                                 .filter(post -> post.getSlug().equals(slug))
-                                 .findFirst()
-                                 .orElse(null);
+        Post postToDelete = getPostBySlug(slug);
         if (postToDelete != null) {
-            posts.remove(postToDelete);
+            postToDelete.setDeleted(true); // Tandai sebagai dihapus
+            postRepository.save(postToDelete);
             return true;
         }
         return false;
+    }
+    
+    // Method tambahan untuk operasi CRUD yang lebih efisien
+    public Post getPostById(Integer id) {
+        Optional<Post> post = postRepository.findById(id);
+        return post.orElse(null);
+    }
+    
+    public Post updatePostById(Integer id, Post updatedPost) {
+        Optional<Post> existingPostOpt = postRepository.findById(id);
+        if (existingPostOpt.isPresent()) {
+            Post existingPost = existingPostOpt.get();
+            existingPost.setTitle(updatedPost.getTitle());
+            existingPost.setBody(updatedPost.getBody());
+            existingPost.setSlug(updatedPost.getSlug());
+            existingPost.setPublished(updatedPost.isPublished());
+            existingPost.setDeleted(updatedPost.isDeleted());
+            existingPost.setCreatedAt(updatedPost.getCreatedAt());
+            existingPost.setPublishedAt(updatedPost.getPublishedAt());
+            return postRepository.save(existingPost);
+        }
+        return null;
+    }
+    
+    public boolean deletePostById(Integer id) {
+        if (postRepository.existsById(id)) {
+            // Tandai sebagai dihapus
+            postRepository.findById(id).ifPresent(post -> post.setDeleted(true));
+            postRepository.save(postRepository.findById(id).get());
+            return true;
+        }
+        return false;
+    }
+
+    public Post publishPost(Integer id) {
+        Post savedPost = postRepository.findById(id).orElse(null);
+
+        if (savedPost == null) {
+            return null; // Post tidak ditemukan
+        }
+        savedPost.setPublished(true);
+        savedPost.setPublishedAt(Instant.now().getEpochSecond()); // Set waktu publikasi
+        return postRepository.save(savedPost);
     }
 }
